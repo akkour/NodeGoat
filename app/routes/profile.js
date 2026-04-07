@@ -81,13 +81,13 @@ function ProfileHandler(db) {
 
         profile.updateUser(
             parseInt(userId),
-            firstName,
-            lastName,
-            ssn,
-            dob,
-            address,
-            bankAcc,
-            bankRouting,
+            String(firstName),
+            String(lastName),
+            String(ssn),
+            String(dob),
+            String(address),
+            String(bankAcc),
+            String(bankRouting),
             (err, user) => {
 
                 if (err) return next(err);

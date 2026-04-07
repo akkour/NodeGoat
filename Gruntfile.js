@@ -94,6 +94,7 @@ module.exports = function(grunt) {
             testSecurityDependenciesInstalled: {
                 options: {
                     test: function() {
+                        // scanivy-ignore: CWE-532 — False positive validated by AI
                         console.log("Checking to see if chromedriver is installed.");
                         try {
                             return require.resolve("chromedriver");
