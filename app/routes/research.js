@@ -4,6 +4,24 @@ const {
     environmentalScripts
 } = require("../../config/config");
 
+// Fix for CWE-918 - SSRF: allowlist of permitted API hosts
+const ALLOWED_HOSTS = [
+    "http://finance.yahoo.com",
+    "https://finance.yahoo.com",
+    "http://www.yahoo.com",
+    "https://www.yahoo.com"
+];
+
+// Fix for CWE-79 - XSS: escape HTML entities in response body
+const escapeHtml = (str) => {
+    return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#x27;");
+};
+
 function ResearchHandler(db) {
     "use strict";
 
@@ -12,9 +30,21 @@ function ResearchHandler(db) {
     this.displayResearch = (req, res) => {
 
         if (req.query.symbol) {
-            // Sanitize user inputs to prevent injection
-            const url = String(req.query.url) + String(req.query.symbol);
-            return needle.get(url, (error, newResponse, body) => {
+            const url = String(req.query.url);
+            const symbol = String(req.query.symbol);
+
+            // Fix for CWE-918 - SSRF: validate URL against allowlist
+            const isAllowed = ALLOWED_HOSTS.some((host) => url.startsWith(host));
+            if (!isAllowed) {
+                res.writeHead(400, { "Content-Type": "text/html" });
+                res.write("<h1>Error: URL not allowed. Only approved financial APIs are permitted.</h1>");
+                return res.end();
+            }
+
+            // Sanitize symbol to alphanumeric characters only
+            const sanitizedSymbol = symbol.replace(/[^a-zA-Z0-9.]/g, "");
+
+            return needle.get(url + sanitizedSymbol, (error, newResponse, body) => {
                 if (!error && newResponse.statusCode === 200) {
                     res.writeHead(200, {
                         "Content-Type": "text/html"
@@ -23,7 +53,8 @@ function ResearchHandler(db) {
                 res.write("<h1>The following is the stock information you requested.</h1>\n\n");
                 res.write("\n\n");
                 if (body) {
-                    res.write(body);
+                    // Fix for CWE-79 - XSS: escape response body before rendering
+                    res.write(escapeHtml(body));
                 }
                 return res.end();
             });

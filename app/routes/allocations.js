@@ -9,11 +9,8 @@ function AllocationsHandler(db) {
     const allocationsDAO = new AllocationsDAO(db);
 
     this.displayAllocations = (req, res, next) => {
-        /*
-        // Fix for A4 Insecure DOR -  take user id from session instead of from URL param
-        const { userId } = req.session;
-        */
-        const userId = String(req.params.userId);
+        // Fix for CWE-639 - IDOR: use session userId instead of URL param
+        const userId = String(req.session.userId);
         const threshold = Number(req.query.threshold);
 
         allocationsDAO.getByUserIdAndThreshold(userId, threshold, (err, allocations) => {

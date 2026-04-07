@@ -96,6 +96,44 @@ Added `overrides` in `package.json` for transitive dependencies:
 
 ---
 
+## Cycle 3: Additional Findings (2026-04-07)
+
+### 15. `app/data/user-dao.js` — Plaintext password storage (CWE-256)
+- Enabled `bcrypt.hashSync()` for password hashing in `addUser()`
+- Switched `validateLogin()` to use `bcrypt.compareSync()` for password verification
+
+### 16. `artifacts/db-reset.js` — Plaintext seed passwords (CWE-256)
+- Updated seed data to use `bcrypt.hashSync()` for demo user passwords
+
+### 17. `app/routes/research.js` — SSRF + Reflected XSS (CWE-918, CWE-79)
+- Added URL allowlist validation against approved financial API hosts
+- Added symbol sanitization (alphanumeric only)
+- Added HTML escaping of response body before rendering
+
+### 18. `app/data/allocations-dao.js` — $where NoSQL injection (CWE-943)
+- Replaced `$where` clause with standard MongoDB operators (`$gt`)
+- Added `parseInt()` validation with range check on threshold parameter
+
+### 19. `config/env/all.js` — Hardcoded session secret (CWE-798)
+- Changed cookieSecret to use `process.env.SESSION_SECRET` with fallback
+
+### 20. `app/routes/allocations.js` — IDOR (CWE-639)
+- Changed to use `req.session.userId` instead of `req.params.userId`
+
+### 21. `app/routes/session.js` — Session fixation (CWE-384)
+- Added `req.session.regenerate()` wrapper on login to prevent session fixation
+
+### 22. `app/routes/session.js` — Log injection (CWE-117)
+- Added CRLF sanitization on userName before logging failed login attempts
+
+### 23. `app/routes/session.js` — Weak password policy (CWE-521)
+- Strengthened PASS_RE regex to require 8+ chars with uppercase, lowercase, and digits
+
+### 24. `app/routes/profile.js` — Incorrect XSS encoding context (CWE-79)
+- Changed `encodeForHTML()` to `encodeForURL()` for website field used in URL context
+
+---
+
 ## Verification
 - `npm install` — completed successfully
 - `npm test` — passed (grunt unit tests)

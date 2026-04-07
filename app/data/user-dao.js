@@ -23,12 +23,9 @@ function UserDAO(db) {
             firstName,
             lastName,
             benefitStartDate: this.getRandomFutureDate(),
-            password //received from request param
-            /*
-            // Fix for A2-1 - Broken Auth
-            // Stores password  in a safer way using one way encryption and salt hashing
+            // Fix for CWE-256 - Plaintext Storage of Password
+            // Stores password in a safer way using one way encryption and salt hashing
             password: bcrypt.hashSync(password, bcrypt.genSaltSync())
-            */
         };
 
         // Add email if set
@@ -58,24 +55,14 @@ function UserDAO(db) {
 
     this.validateLogin = (userName, password, callback) => {
 
-        // Helper function to compare passwords using timing-safe comparison
-        const comparePassword = (fromDB, fromUser) => {
-            // Fix for CWE-208 - Observable Timing Discrepancy
-            const dbBuf = Buffer.from(String(fromDB));
-            const userBuf = Buffer.from(String(fromUser));
-            if (dbBuf.length !== userBuf.length) {
-                return false;
-            }
-            return crypto.timingSafeEqual(dbBuf, userBuf);
-        };
-
         // Callback to pass to MongoDB that validates a user document
         const validateUserDoc = (err, user) => {
 
             if (err) return callback(err, null);
 
             if (user) {
-                if (comparePassword(password, user.password)) {
+                // Fix for CWE-256 - use bcrypt.compareSync for hashed password validation
+                if (bcrypt.compareSync(password, user.password)) {
                     callback(null, user);
                 } else {
                     const invalidPasswordError = new Error("Invalid password");

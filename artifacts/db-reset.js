@@ -7,18 +7,19 @@
 // NODE_ENV=production node artifacts/db-reset.js
 
 const crypto = require("crypto");
+const bcrypt = require("bcrypt-nodejs");
 const { MongoClient } = require("mongodb");
 const { db } = require("../config/config");
 
+// Fix for CWE-256 - seed data uses bcrypt hashed passwords to match user-dao.js
 const USERS_TO_INSERT = [
     {
         "_id": 1,
         "userName": "admin",
         "firstName": "Node Goat",
         "lastName": "Admin",
-        // scanivy-ignore: CWE-798 — False positive validated by AI
-        "password": "Admin_123",
-        //"password" : "$2a$10$8Zo/1e8KM8QzqOKqbDlYlONBOzukWXrM.IiyzqHRYDXqwB3gzDsba", // Admin_123
+        // scanivy-ignore: CWE-798 — False positive: demo passwords for test users
+        "password": bcrypt.hashSync("Admin_123", bcrypt.genSaltSync()), // Admin_123
         "isAdmin": true
     }, {
         "_id": 2,
@@ -26,18 +27,16 @@ const USERS_TO_INSERT = [
         "firstName": "John",
         "lastName": "Doe",
         "benefitStartDate": "2030-01-10",
-        // scanivy-ignore: CWE-798 — False positive validated by AI
-        "password": "User1_123"
-        // "password" : "$2a$10$RNFhiNmt2TTpVO9cqZElb.LQM9e1mzDoggEHufLjAnAKImc6FNE86",// User1_123
+        // scanivy-ignore: CWE-798 — False positive: demo passwords for test users
+        "password": bcrypt.hashSync("User1_123", bcrypt.genSaltSync()) // User1_123
     }, {
         "_id": 3,
         "userName": "user2",
         "firstName": "Will",
         "lastName": "Smith",
         "benefitStartDate": "2025-11-30",
-        // scanivy-ignore: CWE-798 — False positive validated by AI
-        "password": "User2_123"
-        //"password" : "$2a$10$Tlx2cNv15M0Aia7wyItjsepeA8Y6PyBYaNdQqvpxkIUlcONf1ZHyq", // User2_123
+        // scanivy-ignore: CWE-798 — False positive: demo passwords for test users
+        "password": bcrypt.hashSync("User2_123", bcrypt.genSaltSync()) // User2_123
     }];
 
 const tryDropCollection = (db, name) => {
