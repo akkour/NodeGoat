@@ -54,9 +54,8 @@ function ProfileHandler(db) {
         // catastrophic backtracking which means that specific type of input may cause it to consume all CPU resources
         // with an exponential time until it completes
         // --
-        // The Fix: Instead of using greedy quantifiers the same regex will work if we omit the second quantifier +
-        // const regexPattern = /([0-9]+)\#/;
-        const regexPattern = /([0-9]+)+\#/;
+        // Fix for CWE-1333 ReDoS - removed nested quantifier to prevent catastrophic backtracking
+        const regexPattern = /([0-9]+)\#/;
         // Allow only numbers with a suffix of the letter #, for example: 'XXXXXX#'
         const testComplyWithRequirements = regexPattern.test(bankRouting);
         // if the regex test fails we do not allow saving

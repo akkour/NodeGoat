@@ -58,14 +58,15 @@ function UserDAO(db) {
 
     this.validateLogin = (userName, password, callback) => {
 
-        // Helper function to compare passwords
+        // Helper function to compare passwords using timing-safe comparison
         const comparePassword = (fromDB, fromUser) => {
-            return fromDB === fromUser;
-            /*
-            // Fix for A2-Broken Auth
-            // compares decrypted password stored in this.addUser()
-            return bcrypt.compareSync(fromDB, fromUser);
-            */
+            // Fix for CWE-208 - Observable Timing Discrepancy
+            const dbBuf = Buffer.from(String(fromDB));
+            const userBuf = Buffer.from(String(fromUser));
+            if (dbBuf.length !== userBuf.length) {
+                return false;
+            }
+            return crypto.timingSafeEqual(dbBuf, userBuf);
         };
 
         // Callback to pass to MongoDB that validates a user document

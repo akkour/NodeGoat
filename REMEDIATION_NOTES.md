@@ -46,6 +46,18 @@ Full aggressive remediation of 334 ScanIvy findings across source code, configur
 ### 10. `artifacts/cert/server.key` — Hardcoded private key (CWE-798)
 - Replaced expired demo private key with placeholder instructions
 
+### 11. `app/data/user-dao.js` — Timing attack (CWE-208)
+- Replaced direct `===` password comparison with `crypto.timingSafeEqual()` to prevent timing side-channel attacks
+
+### 12. `app/routes/profile.js` — ReDoS (CWE-1333)
+- Fixed vulnerable regex `([0-9]+)+\#` by removing nested quantifier → `([0-9]+)\#`
+
+### 13. `server.js` — Session cookie missing expires (CWE-522)
+- Added explicit `expires` property to session cookie configuration
+
+### 14. `app/routes/research.js` — Input sanitization (CWE-943)
+- Cast `req.query.url` and `req.query.symbol` to `String()` before use
+
 ---
 
 ## Phase 2: False Positive Markers (19 comments)
@@ -80,6 +92,7 @@ Added `overrides` in `package.json` for transitive dependencies:
 - handlebars, lodash, minimist, set-value, mixin-deep, json-schema, form-data, bson
 - minimatch, semver, qs, tough-cookie, tar, braces, cross-spawn, path-to-regexp
 - cookie, send, serve-static, debug, ansi-regex
+- getobject, growl, y18n, websocket-extensions, brace-expansion
 
 ---
 

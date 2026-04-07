@@ -58,7 +58,8 @@ MongoClient.connect(db, (err, db) => {
             secure: true,
             sameSite: "strict",
             path: "/",
-            maxAge: 3600000
+            maxAge: 3600000,
+            expires: new Date(Date.now() + 3600000)
         }
     }));
 

@@ -81,7 +81,12 @@
     "send": ">=0.19.0",
     "serve-static": ">=1.16.0",
     "debug": ">=2.6.9",
-    "ansi-regex": ">=3.0.1 <6.0.0"
+    "ansi-regex": ">=3.0.1 <6.0.0",
+    "getobject": ">=1.0.0",
+    "growl": ">=1.10.0",
+    "y18n": ">=3.2.2",
+    "websocket-extensions": ">=0.1.4",
+    "brace-expansion": ">=1.1.7"
   },
   "repository": "https://github.com/OWASP/NodejsGoat",
   "license": "Apache 2.0"
