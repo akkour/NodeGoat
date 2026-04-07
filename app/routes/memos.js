@@ -3,6 +3,16 @@ const {
     environmentalScripts
 } = require("../../config/config");
 
+// Fix for CWE-79 - XSS: escape HTML entities in memo content
+const escapeHtml = (str) => {
+    return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#x27;");
+};
+
 function MemosHandler(db) {
     "use strict";
 
@@ -25,8 +35,13 @@ function MemosHandler(db) {
 
         memosDAO.getAllMemos((err, docs) => {
             if (err) return next(err);
+            // Fix for CWE-79 - XSS: sanitize memo content before rendering
+            const sanitizedDocs = docs.map(doc => ({
+                ...doc,
+                memo: escapeHtml(doc.memo)
+            }));
             return res.render("memos", {
-                memosList: docs,
+                memosList: sanitizedDocs,
                 userId: userId,
                 environmentalScripts
             });

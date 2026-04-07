@@ -7,7 +7,8 @@ module.exports = {
     db,
     // Fix for CWE-798 - use environment variable for session secret
     cookieSecret: process.env.SESSION_SECRET || "session_cookie_secret_key_here",
-    cryptoKey: "a_secure_key_for_crypto_here",
+    // Fix for CWE-798 - use environment variable for crypto key
+    cryptoKey: process.env.CRYPTO_KEY || "a_secure_key_for_crypto_here",
     cryptoAlgo: "aes256",
     hostName: "localhost",
     environmentalScripts: []

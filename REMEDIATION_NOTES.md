@@ -134,6 +134,43 @@ Added `overrides` in `package.json` for transitive dependencies:
 
 ---
 
+## Cycle 4: Full Scan Remediation (2026-04-07)
+
+### 25. `config/env/all.js` — Hardcoded crypto key (CWE-798)
+- Changed cryptoKey to use `process.env.CRYPTO_KEY` with fallback
+
+### 26. `app/routes/memos.js` — Stored XSS (CWE-79)
+- Added `escapeHtml()` sanitization on memo content before rendering to prevent stored XSS
+
+### 27. `app/routes/session.js` — Information disclosure (CWE-204)
+- Replaced specific "Invalid username" / "Invalid password" error messages with generic "Invalid username and/or password" to prevent user enumeration
+
+### 28. Direct dependency updates
+- `marked`: `0.3.5` → `>=0.3.9` (ReDoS, XSS fixes)
+- `grunt`: `^1.0.3` → `>=1.5.3` (arbitrary code execution, path traversal fixes)
+
+### 29. New dependency overrides (37 packages)
+- brace-expansion: >=1.1.13, trim-newlines: >=3.0.1, sshpk: >=1.13.2
+- shelljs: >=0.8.5, nconf: >=0.11.4, moment: >=2.29.4, mime: >=1.4.1
+- i: >=0.3.7, ini: >=1.3.6, js-yaml: >=3.13.1, kind-of: >=6.0.3
+- fstream: >=1.0.12, dot-prop: >=4.2.1, diff: >=3.5.1
+- decode-uri-component: >=0.2.1, adm-zip: >=0.4.9, xml2js: >=0.5.0
+- undefsafe: >=2.0.3, uglify-js: >=2.6.0, tunnel-agent: >=0.6.0
+- stringstream: >=0.0.6, randomatic: >=3.0.0, ms: >=2.0.0
+- path-parse: >=1.0.7, hosted-git-info: >=2.8.9, is-my-json-valid: >=2.17.2
+- jsonpointer: >=5.0.0, helmet-csp: >=2.9.1, bl: >=1.2.3, extend: >=3.0.2
+- ajv: >=6.12.3, tmp: >=0.2.4, on-headers: >=1.1.0, npm-user-validate: >=1.0.1
+- chownr: >=1.1.0, es5-ext: >=0.10.63, yargs-parser: >=5.0.1
+
+### Findings not fixable via overrides (noted)
+- `fsevents@1.2.9` — macOS-only optional dep, not applicable on Windows
+- `babel-traverse@6.11.4` — major version jump to @babel/traverse@7.x incompatible
+- `swig@1.4.2` — unmaintained, no patched version available (directory traversal)
+- `request@2.x` — deprecated, no fix available for SSRF redirect bypass
+- `.trivy-results.json` CWE-798 findings — scanner artifact, file does not exist in repo
+
+---
+
 ## Verification
 - `npm install` — completed successfully
 - `npm test` — passed (grunt unit tests)
