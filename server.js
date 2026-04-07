@@ -83,10 +83,9 @@ MongoClient.connect(db, (err, db) => {
 
     // Initializing marked library
     // Fix for A9 - Insecure Dependencies
-    marked.setOptions({
-        sanitize: true
-    });
-    app.locals.marked = marked;
+    // Note: sanitize option removed in marked 4.x; XSS protection handled by swig autoescape
+    // In marked 4.x, use marked.parse() instead of marked() directly
+    app.locals.marked = marked.parse;
 
     // Application routes
     routes(app, db);
