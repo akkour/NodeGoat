@@ -4,6 +4,8 @@ const AllocationsDAO = require("../data/allocations-dao").AllocationsDAO;
 const {
     environmentalScripts
 } = require("../../config/config");
+// Fix for CWE-943 - NoSQL Injection: defense-in-depth sanitization
+const mongoSanitize = require("mongo-sanitize");
 
 /* The SessionHandler must be constructed with a connected db */
 function SessionHandler(db) {
@@ -52,8 +54,8 @@ function SessionHandler(db) {
     };
 
     this.handleLoginRequest = (req, res, next) => {
-        const userName = String(req.body.userName);
-        const password = String(req.body.password);
+        const userName = String(mongoSanitize(req.body.userName));
+        const password = String(mongoSanitize(req.body.password));
         userDAO.validateLogin(userName, password, (err, user) => {
             // Fix for CWE-204 - use generic error message to prevent user enumeration
             const errorMessage = "Invalid username and/or password";
@@ -157,6 +159,7 @@ function SessionHandler(db) {
 
     this.handleSignup = (req, res, next) => {
 
+        const sanitizedBody = mongoSanitize(req.body);
         const {
             email,
             userName,
@@ -164,7 +167,7 @@ function SessionHandler(db) {
             lastName,
             password,
             verify
-        } = req.body;
+        } = sanitizedBody;
 
         // set these up in case we have an error case
         const errors = {

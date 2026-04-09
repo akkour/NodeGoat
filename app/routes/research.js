@@ -12,15 +12,8 @@ const ALLOWED_HOSTS = [
     "https://www.yahoo.com"
 ];
 
-// Fix for CWE-79 - XSS: escape HTML entities in response body
-const escapeHtml = (str) => {
-    return String(str)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#x27;");
-};
+// Fix for CWE-79 - XSS: use standard escape-html library instead of hand-rolled function
+const escapeHtml = require("escape-html");
 
 function ResearchHandler(db) {
     "use strict";

@@ -2,6 +2,8 @@ const ContributionsDAO = require("../data/contributions-dao").ContributionsDAO;
 const {
     environmentalScripts
 } = require("../../config/config");
+// Fix for CWE-943 - NoSQL Injection: defense-in-depth sanitization
+const mongoSanitize = require("mongo-sanitize");
 
 /* The ContributionsHandler must be constructed with a connected db */
 function ContributionsHandler(db) {
@@ -28,9 +30,9 @@ function ContributionsHandler(db) {
     this.handleContributionsUpdate = (req, res, next) => {
 
         // Fix for A1 -1 SSJS Injection attacks - uses parseFloat instead of eval
-        const preTax = parseFloat(req.body.preTax);
-        const afterTax = parseFloat(req.body.afterTax);
-        const roth = parseFloat(req.body.roth);
+        const preTax = parseFloat(mongoSanitize(req.body.preTax));
+        const afterTax = parseFloat(mongoSanitize(req.body.afterTax));
+        const roth = parseFloat(mongoSanitize(req.body.roth));
         const {
             userId
         } = req.session;

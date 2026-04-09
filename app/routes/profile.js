@@ -3,6 +3,8 @@ const ESAPI = require("node-esapi");
 const {
     environmentalScripts
 } = require("../../config/config");
+// Fix for CWE-943 - NoSQL Injection: defense-in-depth sanitization
+const mongoSanitize = require("mongo-sanitize");
 
 /* The ProfileHandler must be constructed with a connected db */
 function ProfileHandler(db) {
@@ -33,6 +35,7 @@ function ProfileHandler(db) {
 
     this.handleProfileUpdate = (req, res, next) => {
 
+        const sanitizedBody = mongoSanitize(req.body);
         const {
             firstName,
             lastName,
@@ -41,7 +44,7 @@ function ProfileHandler(db) {
             address,
             bankAcc,
             bankRouting
-        } = req.body;
+        } = sanitizedBody;
 
         // Fix for Section: ReDoS attack
         // The following regexPattern that is used to validate the bankRouting number is insecure and vulnerable to

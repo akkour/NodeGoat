@@ -2,16 +2,10 @@ const MemosDAO = require("../data/memos-dao").MemosDAO;
 const {
     environmentalScripts
 } = require("../../config/config");
-
-// Fix for CWE-79 - XSS: escape HTML entities in memo content
-const escapeHtml = (str) => {
-    return String(str)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#x27;");
-};
+// Fix for CWE-79 - XSS: use standard escape-html library instead of hand-rolled function
+const escapeHtml = require("escape-html");
+// Fix for CWE-943 - NoSQL Injection: defense-in-depth sanitization
+const mongoSanitize = require("mongo-sanitize");
 
 function MemosHandler(db) {
     "use strict";
@@ -20,7 +14,7 @@ function MemosHandler(db) {
 
     this.addMemos = (req, res, next) => {
 
-        const memo = String(req.body.memo);
+        const memo = String(mongoSanitize(req.body.memo));
         memosDAO.insert(memo, (err, docs) => {
             if (err) return next(err);
             this.displayMemos(req, res, next);

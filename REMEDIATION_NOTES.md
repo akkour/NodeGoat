@@ -107,7 +107,7 @@ export CRYPTO_KEY="<your-secure-random-key>"
 
 The application will fail to start without these values set.
 
-## Files Modified This Cycle
+## Files Modified This Cycle (Cycle 5)
 
 | File | Change |
 |------|--------|
@@ -115,3 +115,61 @@ The application will fail to start without these values set.
 | package.json | Updated 2 overrides (js-yaml, ajv), added 3 new (micromatch, marked, fsevents) |
 | server.js | Updated marked usage for v4.x API compatibility |
 | REMEDIATION_NOTES.md | Generated this report |
+
+---
+
+# ScanIvy Cycle 6 — Remediation Notes
+
+**Date:** 2026-04-09
+**Scan findings:** 141 total (SAST + SCA)
+**Genuinely fixed this cycle:** 8 code changes + 1 new dependency
+**False positives / already fixed:** 133
+
+## Code Fixes Applied This Cycle
+
+### HC-001, HC-002: Replace hand-rolled `escapeHtml` with `escape-html` library
+- **Files:** `app/routes/memos.js`, `app/routes/research.js`
+- **Fix:** Removed manual `escapeHtml()` implementations, replaced with `require("escape-html")` — the well-tested library already present as a transitive dependency of Express.
+- **Status:** RESOLVED
+
+### CC-004, CC-006, CC-007, CC-008, CC-011: Add `mongo-sanitize` defense-in-depth
+- **Files:** `app/routes/session.js`, `app/routes/memos.js`, `app/routes/contributions.js`, `app/routes/profile.js`, `app/routes/allocations.js`
+- **Fix:** Added `mongoSanitize()` calls to strip `$`-prefixed keys from user input before type casting (`String()`, `parseInt()`, `parseFloat()`, `Number()`).
+- **Why:** While existing type casting already prevents NoSQL injection, `mongo-sanitize` adds a belt-and-suspenders defense layer.
+- **Dependency:** `mongo-sanitize@1.1.0` added to `package.json`.
+- **Status:** RESOLVED
+
+### MC-008 (partial): Remove redundant `expires` from cookie config
+- **File:** `server.js`
+- **Fix:** Removed `expires: new Date(Date.now() + 3600000)` from session cookie config. `maxAge: 3600000` (already set) is the preferred modern approach; `expires` was redundant and created a fixed timestamp at server startup.
+- **Status:** RESOLVED
+
+## False Positives / Already Fixed (No Action Needed — Cycle 6)
+
+| ID | CWE | Finding | Reason |
+|----|-----|---------|--------|
+| MC-001 to MC-004 | CWE-798 | Secrets in `.trivy-results.json` | File does not exist |
+| MC-005, MC-007, MC-010 | CWE-601 | Open redirect | Already fixed in `app/routes/index.js:70-77` |
+| MC-008 | CWE-693 | Cookie sameSite missing | Already has `sameSite: "strict"` |
+| MC-006 | CWE-208 | Timing attack in password comparison | Compares two user-supplied values (`password !== verify`); actual validation uses `bcrypt.compareSync` |
+| MC-009 | CWE-522 | Cookie domain not set | Deployment-specific; localhost in dev |
+| CC-001 | CWE-943 | NoSQL injection session.js allocationsDAO | Internal `crypto.randomInt()` data, not user input |
+| CC-002 | CWE-943 | NoSQL injection session.js:21 | Already uses `parseInt()` |
+| CC-003 | CWE-943 | NoSQL injection allocations.js:9 | Already uses `String()` and `Number()` |
+| CC-005 | CWE-943 | NoSQL injection contributions.js:57 | Already uses `parseFloat()` + NaN validation |
+| CC-009 | CWE-943 | NoSQL injection profile.js:75 | Already uses `parseInt()`/`String()` |
+| CC-010 | CWE-943 | NoSQL injection research.js:28 | No user input to DAO; `String()` + regex sanitization |
+| 118 SCA findings | Various | Dependency vulnerabilities | All covered by existing 65 overrides in `package.json` |
+
+## Files Modified This Cycle (Cycle 6)
+
+| File | Change |
+|------|--------|
+| `app/routes/memos.js` | Replaced manual `escapeHtml` with `escape-html` lib; added `mongo-sanitize` |
+| `app/routes/research.js` | Replaced manual `escapeHtml` with `escape-html` lib |
+| `app/routes/session.js` | Added `mongo-sanitize` for login and signup inputs |
+| `app/routes/contributions.js` | Added `mongo-sanitize` for contribution values |
+| `app/routes/profile.js` | Added `mongo-sanitize` for profile update fields |
+| `app/routes/allocations.js` | Added `mongo-sanitize` for threshold query param |
+| `server.js` | Removed redundant `expires` from cookie config |
+| `package.json` | Added `mongo-sanitize` and `escape-html` as direct dependencies |
